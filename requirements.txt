@@ -1,0 +1,12 @@
+numpy
+scipy
+shapely
+matplotlib
+pandas
+git+https://github.com/asrvsn/matgeo.git
+git+https://github.com/asrvsn/microseg.git
+git+https://github.com/asrvsn/asrvsn_mpl.git
+scikit-image
+aicsimageio
+opencv-python
+tqdm
