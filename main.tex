@@ -194,11 +194,11 @@ component of which is pherophorins. To investigate the geometry of the growing E
 we fused the \textit{yfp} gene with the gene for pherophorin II (PhII) 
 in \textit{V. carteri}.
 Confocal microscopy reveals PhII:YFP localization at key structures within the ECM, 
-including the boundaries of compartments surrounding each somatic cell and the outer surface of the organism.
+including the boundaries of compartments forming an epithelium-like architecture around somatic cells and the outer surface of the organism.
 Image analysis during the life cycle allows the stochastic geometry of those growing
 compartments to be quantified.  We find that their areas and aspect ratios exhibit robust gamma distributions and exhibit a transition from a tight polygonal to a looser acircular packing geometry with stable eccentricity 
 over time, evoking parallels and distinctions with the behavior of hydrated foams.  These results provide a quantitative benchmark for addressing
-a general, open question in biology: How do cells produce structures external to themselves in a robust
+a general, open question in biology: How do cells collectively produce structures external to themselves in a robust
 and accurate manner? 
 \end{abstract}
 
@@ -215,7 +215,7 @@ and accurate manner?
     \thispagestyle{firststyle}
     \ifthenelse{\boolean{shortarticle}}{\ifthenelse{\boolean{singlecolumn}}{\abscontentformatted}{\abscontent}}{}
     
-    \firstpage[5]{3}
+    \firstpage[3]{3}
     % Use \firstpage to indicate which paragraph and line will start the second page and subsequent formatting. In this example, there are a total of 11 paragraphs on the first page, counting the first level heading as a paragraph. The value {12} represents the number of the paragraph starting the second page. If a paragraph runs over onto the second page, include a bracket with the paragraph line number starting the second page, followed by the paragraph number in curly brackets, e.g. "\firstpage[4]{11}".
     % If your first paragraph (i.e. with the \dropcap) contains a list environment (quote, quotation, theorem, definition, enumerate, itemize...), the line after the list may have some extra indentation. If this is the case, add \parshape=0 to the end of the list environment.
 \fi
@@ -233,8 +233,8 @@ rendering them uniquely suited model systems for examining evolution from a unic
 to multicellular organisms with different cell types
 \cite{RN4413,RN164,RN3520,RN4692,RN5666}.
 In particular, \textit{V. carteri}'s distinct and multilayered ECM makes it a model organism 
-for investigating the mechanisms underlying ECM growth and its effects on the positioning of 
-the cells that secrete its components.
+for investigating the mechanisms underlying ECM growth and 
+the joint evolution of ECM structures with the positional configuration of cells that secrete its components.
 Building on recently established protocols for stable expression of 
 fluorescently labeled proteins in \textit{V. carteri} \cite{RN5456,RN5656,RN5682} we present here a new transgenic strain revealing localization of the 
 glycoprotein pherophorin II and the first \textit{in vivo} study of the stochastic geometry of a growing ECM.
@@ -244,8 +244,8 @@ glycoprotein pherophorin II and the first \textit{in vivo} study of the stochast
 by exposure to heat or a species-specific glycoprotein sex inducer, which results in development of 
 sperm-packet-bearing males and egg-bearing females 
 \cite{RN616,RN3,RN79,RN5458}. 
-In the usual asexual development, a \textit{V. carteri} organism consists of $\sim 2000$ biflagellate somatic cells
-resembling \textit{Chlamydomonas} in their morphology, arranged in a monolayer at the surface of a sphere 
+In the usual asexual development, \textit{V. carteri} consists of $\sim 2000$ biflagellate somatic cells
+resembling \textit{Chlamydomonas} in their morphology, arranged in a monolayer at the surface of a spheroid 
 and approximately 16 much larger, nonmotile, asexual reproductive cells (gonidia) that constitute the germline, 
 lying just below the somatic cell layer \cite{RN4413,RN164,RN566,RN896,RN703}.
 The somatic cells are specialized for ECM biosynthesis, photoreception and motility; 
@@ -253,7 +253,8 @@ for phototaxis, they
 must be 
 positioned correctly within the ECM at the surface of the organism \cite{RN616,RN78,RN4}.
 
-The ECM of \textit{V. carteri} has been studied in the past decades from the perspective of structure and 
+The ECM of \textit{V. carteri} has been studied in the past decades from the perspective 
+of structure and 
 composition, developmental, mechanical properties, cellular interactions, molecular biology and 
 genetics, and evolution \cite{RN616,RN984,RN78,RN4,RN5456}.  
 In the ontogenesis of \textit{V. carteri}, ECM biosynthesis in juveniles, inside their mothers, begins 
@@ -261,8 +262,7 @@ only after all cell divisions and the process of embryonic inversion are complet
 Cells of the juveniles then continuously excrete large quantities of ECM building blocks which are integrated  into their ECM, 
 producing an enormous increase in the size of the juveniles; within 48 hours the volume increases almost $3000$-fold
 as the diameter increases 
-from $\sim 70\,\mu$m to $\sim 1\,$mm, raising the question of how relative cell positions are 
-affected by growth. 
+from $\sim 70\,\mu$m to $\sim 1\,$mm, raising the question of how internal ECM geometry relative cell positions evolve during growth. 
 In the adult organism, the ECM accounts for up to 99$\%$ of the organism's volume and consists of morphologically distinct structures with a defined spatial arrangement.
 Based on electron microscopy, a nomenclature was established \cite{RN78}
 that defines four main ECM zones: flagellar zone (FZ), boundary zone (BZ), cellular zone (CZ) and 
@@ -326,8 +326,9 @@ This allows the proportion of ECM secreted by individual somatic cells
 to be determined along with the stochastic 
 geometry of these ECM structures during development. 
 
-We suggest that a detailed study of the geometry of ECM structures during growth in \textit{Volvox} made possible
-by this strain will provide
+We suggest that a detailed study of 
+growing ECM geometry made possible by this strain of \textit{Volvox}
+will provide
 insight into a more general question in biology: How do cells robustly produce structures 
 external to themselves?  There is no physical picture of how the intricate geometry of the
 \textit{Volvox} ECM arises through what must be a self-organized process of polymer crosslinking \cite{sumper2000self}.  
@@ -337,16 +338,16 @@ this connection has not been made for
 \textit{Volvox}.
 
 Recently \cite{Day2022}, the somatic cell locations of \textit{V. carteri} were determined 
-using their chlorophyll autofluorescence, from which the ECM neighborhoods were determined by 2D Voronoi tessellation, 
+using their chlorophyll autofluorescence, from which the ECM neighborhoods were determined by a surface Voronoi tessellation, 
 as in Figs. \ref{fig1}C,D.
 While the somatic cells appear to be arranged in a quasi-regular pattern, this analysis reveals that
 their neighborhood areas exhibited a broad, skewed 
 k-gamma distribution. Subsequent work has shown that such distributions may arise from 
 bursty ECM production at the single-cell level \cite{RN5866}. While the nearest-space-allocation rule assumed by Voronoi tessellations is a reasonable first approximation of the geometry of the somatic CZ3, the validity of this approximation remains unclear.
-To investigate this and to answer the more general questions raised above, we performed geometric 
+To investigate this and to answer the more general questions of geometry during growth raised above, we performed 
 analyses of the structures illuminated by localized PhII:YFP, using metrics (Table \ref{table:metrics}) which give insight into the coexistence of 
-local geometric stochasticity and global robustness during growth. In particular, we draw parallels between the temporal evolution 
-of ECM structures and wet foams. 
+local (cell-scale) geometric stochasticity and global (organism-scale) robustness during growth. 
+From trends observed in the temporal evolution of these metrics, we find compelling physical analogues to the growth of ECM structures, including the dynamics of wet foams.
     
 \begin{figure}[t]
 \begin{center}
@@ -387,18 +388,18 @@ vector and, via confocal microscopy, for expression of the fluorescent protein a
 As expected and detailed below, there are
 continuous changes in the amount of ECM expansion over the life cycle. While we primarily examine the parental somatic cell layer and surrounding ECM, the 
 developmental stage of the next generation is used for a precise definition of 
-five key stages which we 
+five key post-hatching stages which we 
 focused on in the comparative analyses (Fig. \ref{fig3}). Stage I: Freshly hatched young adults of 
 equivalent circular radius (defined in \SI, \S 2.B) $R=106\pm 6\,\mu$m, containing immature gonidia. Stage II ($\sim 15$ h after hatching): 
-Middle-aged adults with $R=221\pm 22\,\mu$m containing early embryos (4-8 cell stage).
-Stage III ($\sim 21\ $h after hatching): Older middle-aged adults with $R=244\pm 15\,\mu$m containing embryos before inversion.
+Middle-aged adults of radius $R=221\pm 22\,\mu$m containing early embryos (4-8 cell stage).
+Stage III ($\sim 21\ $h after hatching): Older middle-aged adults of radius $R=244\pm 15\,\mu$m containing embryos before inversion.
 Stage IV ($\sim 36\ $h after hatching): Old adults of radius $R=422\pm 6\,\mu$m containing fully developed juveniles.
 Stage S: Sexually developed adult females of radius $R=265\pm 29\,\mu$m bearing egg cells.
-Since expression of PhII is induced by the sex-inducer protein 
+Since expression of PhII is induced by the sex-inducer protein (SIP)
 \cite{RN5458,RN163,RN228},
 in stages I to IV with vegetative phenotype, 
-the sex-inducer protein was added 24 hours before microscopy to increase PhII expression; 
-after such a short incubation with the sex inducer, the females still show an unchanged cleavage program and 
+SIP was added 24 hours before microscopy to increase PhII expression; 
+after such a short incubation with SIP, the females still show an unchanged cleavage program and 
 the vegetative phenotype. To obtain a changed cleavage program and a fully developed sexual phenotype (S), the females 
 were sexually induced 72 hours before microscopy. 
 
@@ -423,7 +424,7 @@ Sexually induced transformants expressing the \textit{phII}:\textit{yfp} gene un
 endogenous \textit{phII} promoter were analyzed in vivo for the localization of the PHII:YFP fusion protein. 
 PhII:YFP is located in the CZ3 of both somatic cells and gonidia as well as in the BZ.
 Top views of whole organism: (A) stage II immediately before the first cleavage of the gonidia inside; 
-and (B) stage IV) before hatching of the fully developed juveniles. (C) Cross 
+and (B) stage IV before hatching of the fully developed juveniles. (C) Cross 
 section through CZ in early stage II. (D4) Magnified view of the outer most ECM region. 
 Column 1: YFP fluorescence of the PhII:YFP protein (green). 
 Column 2: Chlorophyll fluorescence (magenta). Column 3: Overlay of YFP and chlorophyll fluorescence. 
@@ -438,8 +439,8 @@ in red.}
 \begin{center}
 \includegraphics[width=1.75\columnwidth]{PhII_figure5.pdf}
 \caption{As in Fig. \ref{fig4}, but a close-up of PhII:YFP localization in top view.
-(A) Stage II. Magnified view of the somatic CZ3 compartments (1), identified by orange in 2 along with cell 
-boundaries (white), shown together in 3 and in 4 with underlaid Voronoi tessellation (blue) and cell boundaries in red.
+(A) Stage II. Magnified view of the somatic CZ3 compartments (1), identified by orange in column 2 along with cell 
+boundaries (white), shown together in columns 3 and 4 with underlaid Voronoi tessellation (blue) and cell boundaries in red.
 (B) In stage IV the CZ3 compartments become more bubble shaped and
 individual CZ3 walls separate from the neighbors, leaving extracompartmental ECM space.
 Double-walls also appear, highlighted in B3.
@@ -457,7 +458,7 @@ At a first glance, in a top view, PhII:YFP appears to form a polygonal pattern a
 post-embryonic spheroid, with a single somatic cell near the center of each compartment (Fig. \ref{fig4}). 
 PhII:YFP is also found in the ECM compartment boundaries (CZ3) of the gonidia, which are located below the 
 somatic cell layer (Figs. \ref{fig1}B and \ref{fig4}).
-These observations hold at all stages after embryonic inversion, even if the shape of the compartment boundaries varies.
+These observations hold at all stages after embryonic inversion, even as the shape of the compartment boundaries varies.
 On closer inspection (Fig. \ref{fig5}), it becomes apparent that: i)  the shapes of the somatic ECM compartment 
 boundaries include a mix of hexagons, heptagons, pentagons and other polygons, as well as circles and ovals, 
 ii) the angularity of the compartment boundaries changes in the course of expansion of the organism during development, 
@@ -491,7 +492,7 @@ with passages between neighboring compartments.
 As the boundaries are so close together in 
 early stages, only the thickness of the double wall 
 can be determined and then halved; we estimate stage II single wall thickness as $1.6\pm 0.4\,\mu$m
-and the similar value $1.9\pm 0.5\,\mu$m in stage IV. 
+and a similar value of $1.9\pm 0.5\,\mu$m in stage IV. 
 
 A comparison of the PhII:YFP-stained structures with 
 descriptions of ECM structures from electron microscopy 
@@ -526,9 +527,9 @@ All ECM material required for this increase in volume can only be produced and e
 The localization of PhII at the CZ3 
 compartment boundaries allows us to carry out the 
 first quantitative analyses of their geometry, both 
-along the PA axis and through the life cycle 
+along the posterior-anterior (PA) axis and through the life cycle 
 stages.
-A semi-automated image analysis pipeline 
+A semi-automated image analysis 
 (\SI, \S 2) reveals 
 geometric features described in Table \ref{table:metrics} and Fig. \ref{fig7}.
 A total of $29$ 
@@ -537,7 +538,6 @@ were analyzed:
 $7$ in stage I, $5$ each in stages II, III, and IV 
 of the asexual life cycle, and $7$ in the sexual 
 life cycle (stage S).
-
 
 The PA axis of \textit{V. carteri} spheroids 
 corresponds to their swimming direction, and 
@@ -556,18 +556,18 @@ major axis of the spheroid (\SI, Fig. S5).
 
 The metrics presented in Fig. \ref{fig7} 
 (see \SI, \S2)
-are derived from the compartment shape outline or from moments of area.
-The matrix ${\mathsf M}_2$ of second 
-moments of area and the normalized matrix ${\mathsf \Sigma}={\mathsf M}_2/a_{\rm cz3}$, 
-with the former defined as
+are derived from the compartment shape outline or from geometric moments of area.
+The matrix ${\mathsf M}_2$ of $2^\mathrm{nd}$ 
+moments
 \begin{equation}
     \label{eq:m2_cz3}
     {\mathsf M}_2 =\!\! \iint\limits_{\rm cz3} 
     ({\bm x} - {\bm x}_{\rm cz3})\!\otimes\!({\bm x} - {\bm x}_{\rm cz3}) d^2{\bm x},
 \end{equation}
+and its normalization ${\mathsf \Sigma}={\mathsf M}_2/a_{\rm cz3}$
 are interpretable as elastic strain tensors with respect to unit-aspect-ratio shapes. 
-$\mathsf{\Sigma}$'s eigenvalues $\lambda_{\rm max}, \lambda_{\rm min}$ 
-(whose square roots define the major, minor axis lengths) are principal stretches of this 
+The eigenvalues $\lambda_{\rm max}, \lambda_{\rm min}$
+(whose square roots define the major, minor axis lengths) of $\mathsf{\Sigma}$ are principal stretches of this 
 deformation, yielding the aspect ratio and other quantities defined in Table \ref{table:metrics}. 
 Overall, we measure changes in the moments of area (\SI, \S 2.B) to quantify 
 ECM geometry during growth;
@@ -575,9 +575,9 @@ the $0^\mathrm{th}$ gives the area increase,
 the $1^\mathrm{st}$ quantifies migration of  
 compartment centroids with respect to cells, 
 the $2^\mathrm{nd}$ gives the change in 
-anisotropy (Table \ref{table:metrics}).
+eccentricity (Table \ref{table:metrics}).
 The sum of second moments reveals changes in crystallinity of the entire CZ3 
-configuration, as shown in \S\ref{sec:tessellation}.
+configuration, as described in \S\ref{sec:tessellation}.
 
 \ifPhIIpreprint\begin{table}[b]\else\begin{table}\fi
 \centering
@@ -633,7 +633,7 @@ error $e_V$.}
 
 \begin{figure}[htp]
     \begin{minipage}[b]{0.48\textwidth}
-\caption{PA axis and life cycle variation. (A-G) Column 1: Computed metrics binned in $8$ 
+\caption{Posterior-anterior axis and life cycle variation. (A-G) Column 1: Computed metrics binned in $8$ 
 equally spaced segments along the PA axis.
 Means are shown as dashed lines with per-bin standard deviation reported by shaded segments. 
 Colors correspond to developmental stages defined in Fig. \ref{fig3}.
@@ -649,9 +649,9 @@ Units are noted in parentheses, and otherwise, are dimensionless.}
 \subsubsection{\textbf{Anterior CZ3 compartments expand toward end of life cycle}}
 \label{sec:cz3_ap}
 
-Fig. \ref{fig8}A1-2 shows that the somatic cell area increases modestly, by $\sim 10\%$, along the PA axis at all stages. In contrast, the CZ3 compartment area grows substantially along this axis, with a minimum increase of $\sim 50\%$ in stage I and a maximum of $\sim 130\%$ in stages III and IV. 
-Moreover, the slope increases after the equatorial region in all stages, an effect which is most pronounced in stage IV.
-Cell and compartment areas also increase by life cycle stage as shown in Fig. \ref{fig8}, rows A-B. 
+Fig. \ref{fig8}A1-2 shows that the somatic cell area increases modestly, by $\sim 10\%$, along the PA axis at all stages. In contrast, the CZ3 compartment area grows substantially along this axis, with a minimum increase of $\sim 50\%$ in stage I and a maximum of $\sim 130\%$ in III and IV. 
+Moreover, the slope increases after the equatorial region in all stages, most prominently in stage IV.
+Cell and compartment areas also increase by life cycle stage as shown in Fig. \ref{fig8}A-B. 
 Somatic cell areas double from I-II, growing merely $\sim 10\%$ afterwards, whereas compartment areas expand primarily after III, with a $\sim150\%$ increase occurring from III-IV (\SI, Table S2). 
 This surge in compartment area mirrors the spheroid's growth from III-IV, accounted an estimated $\sim 90\%$ to parental ECM volume changes, $\sim 10\%$ to that of growing juveniles, and minimally to that of somatic cells (Tables \ref{table:growth} and \SI, S1).
 
@@ -708,7 +708,7 @@ Values in final two columns represent changes with respect to preceding stage.}
 from tighter polygonal to looser elliptical packing}}
 \label{sec:r2v}
 
-While there is no apparent trend in the circularity 
+Panels D1-2 in Fig. \ref{fig8} show that while there is no apparent trend in the circularity 
 of CZ3 compartments along the PA axis, the average 
 circularity increases from stage I to IV. Since 
 extracompartmental ECM space appears
@@ -737,7 +737,7 @@ preferentially elongated.
 Fig. \ref{fig8}C shows that aspect ratio 
 distributions are not only stable in mean, with 
 less than $5\%$ variation, but also in 
-skewness and variance; they are gamma-distributed throughout growth (\SI, Fig. S9).
+skewness and variance; they are gamma-distributed throughout growth with stable distribution parameters (\SI, Fig. S9).
 Together, the 
 invariance of aspect ratio and increasing 
 compartment circularity during growth  
@@ -753,8 +753,8 @@ the life cycle. The absolute offset from the compartment
 center of mass (Fig. \ref{fig8}E1-2) increases 
 from stages I to IV, and along the PA axis, 
 indicating a strong correlation between larger 
-compartment areas and cellular displacements (as we show in \S \ref{sec:corr}). 
-Perhaps counterintuitively, the cellular offset vector shows no correlation with the primary elongation axis of the compartment and is uniformly distributed in $[0, \frac{\pi}{2}]$ throughout I-IV and S (\SI, Fig. S10).
+compartment areas and cellular displacements (as quantified in \S \ref{sec:corr}). 
+Perhaps counterintuitively, the cellular offset vector shows no correlation with the primary elongation axis of the compartment and its angle is uniformly distributed in $[0, \frac{\pi}{2}]$ in I-IV and S (\SI, Fig. S10).
 In contrast to the absolute offset, the whitened offset (which takes into account compartment size and anisotropy) is nearly constant in mean after stage II 
 (black vertical lines in Fig. \ref{fig8}F).
 The support of the distribution does increase, 
@@ -768,17 +768,17 @@ resemble each other in ECM geometry.
 \subsection{CZ3 geometry shows feature correlations}
 \label{sec:corr}
 
-The analysis above indicates compelling correlations between ECM growth and geometry. 
-Here we analyze these in more detail with pooled data from all spheroids presented in Fig. \ref{fig8}.
+The analysis above indicates compelling correlations between geometric features of the ECM during growth;
+here we analyze these in more detail with pooled data from all spheroids presented in Fig. \ref{fig8}.
 Figure \ref{fig9}A shows an exponential increase in the compartment area $a_{\rm cz3}$ with cell area $a_{\rm cell}$ through stage III, saturating at stage IV.
 This confirms that somatic cells primarily grow after hatching and before stage II, in contrast 
-to compartments, which primarily grow after stage III.
+to compartments, which primarily grow towards the end of the life cycle after stage III.
 
 As expected from the PA analysis, the aspect ratio (B) is decoupled from compartment size, 
 while the circularity (C) increases.  This reinforces
 the conclusion that as compartments expand they preserve their aspect ratio while decreasing in polygonality.
 The cellular offset (D) reveals a 
-power-law relationship with compartment area, which, in conjunction with the weak coupling between whitened offset and compartment size (E), further supports this conclusion in light of a scaling argument presented in Discussion \S5.
+power-law relationship with compartment area, which, in conjunction with the weak coupling between whitened offset and compartment size (E), further supports this conclusion in light of a scaling argument we explain in Discussion \S5.
 
 \begin{figure}[t]
 \begin{center}
@@ -788,8 +788,7 @@ At stages I-IV (blue, red, magenta, green) and S (orange), plots show correlatio
 between compartment area ($a_{\text{cz3}}$) and metrics in Table \ref{table:metrics}
 ($q_{\rm hex}$ in (C) is the circularity of a regular hexagon).  
 Coordinate transforms are chosen in either linear- or log-scale, with natural offsets, 
-to produce most equally-sized contours across the distributions as measured via the 
-kernel density estimate.
+to produce approximately equally-sized contours across life cycle stages.
 $R^2$ is the linear regression correlation coefficient for stages listed.}
 \label{fig9}
 \end{center}
@@ -824,9 +823,8 @@ regularity we infer that both tight packing and proximity
 to an equal-area lattice describes the initial 
 configuration. The values of $k_{\rm gamma}$ between $2$ and $3$ in Stage IV
 are close to those for the Voronoi tessellations 
-\cite{Day2022}. This has implications for regime of 
-validity of the Voronoi approximation, as discussed in 
-\S \ref{sec:r2v}.
+\cite{Day2022}, 
+which is remarkable given the decreasing polygonality of CZ3 compartments observed in \S \ref{sec:r2v}.
 
 \begin{figure}[t]
 \begin{center}
@@ -852,8 +850,8 @@ Although CZ3
 compartments do not tile space due to 
 extracompartmental spaces, \eqref{eq:sum_second_moments} can nevertheless 
 be computed for the covered area.
-This energetic cost for each spheroid, encoding deviations from optimality arising from some form of perimeter excess, is displayed in panel C.
-We find that somatic CZ3 configurations become \textit{decreasingly} optimal during expansion\textemdash 
+This energetic cost for each spheroid, representing deviations of the CZ3 architecture from optimal space-partitioning, is displayed in panel C.
+We find the somatic CZ3 architecture becomes \textit{decreasingly} optimal during expansion\textemdash 
 an observation consistent with the underlying 
 increasing trends in cell offset and area polydispersity  
 observed in \S\ref{sec:cz3_ap} and \S\ref{sec:cz3_aniso}. 
@@ -909,7 +907,7 @@ tunnels are seen in the centers of those areas as two dark dots.}
 Synthesizing the results of preceding sections, we arrive
 at the summary shown in Fig. \ref{fig12} of the 
 identified locations of PhII.
-It forms compartment boundaries (CZ3) not only 
+It localizes in compartment boundaries (CZ3) not only 
 around each somatic cell but additionally around each gonidium, 
 and is also found in the outer border (BZ) of the spheroid;  CZ3 and BZ are 
 connected where the flagella emerge. While each compartment boundary 
@@ -918,8 +916,8 @@ and is most likely
 synthesized solely by that cell, PhII in the BZ 
 is evidently formed collectively by neighboring
 cells. Since neither the compartment boundaries 
-(CZ3) of the somatic cells are completely adjacent 
-to the neighboring compartment boundaries, nor does 
+(CZ3) of somatic cells are completely adjacent 
+to those of neighbors, nor does 
 the BZ rest directly on the compartment boundaries, 
 extracompartmental ECM space remains between the 
 CZ3 enclosures as well as between them and the BZ. 
@@ -961,7 +959,7 @@ Schematic cross section, showing localization in CZ3 of both somatic cells
 and gonidia (dark green) and BZ (light green). (B) Schematic top view, looking 
 through the boundary zone, showing
 PhII:YFP in the CZ3 and the existence of 
-extracompartmental ECM spaces. Position of a gonidium below somatic cell layer
+extracompartmental ECM spaces. Position of a gonidium below the somatic cell layer
 is indicated (dashed); the CZ3 compartment of the deeper gonidium
 extends to the surface where it is surrounded by ECM compartments with somatic cells.}
 \label{fig12}
@@ -990,7 +988,7 @@ the precise mechanism for transporting the ECM components to their destinations 
 
 \textbf{4. Evolution of the volvocine ECM and convergence of a monolayer epithelium-like architecture.}
 The ECM of \textit{V. carteri} evolved from the (cellulose-free) cell wall of a \textit{Chlamydomonas}-like, 
-unicellular ancestor \cite{RN896}. The cell wall of extant \textit{Chlamydomonas} species consists of an outer ``tripartite" layer with a highly regular, quasi-crystalline structure and an inner more amorphous layer. In few-celled volvocine genera with a low degree of developmental complexity, such as \textit{Pandorina}, the tripartite layer is partially split, so that its outer leaflet is continuous across the surface of the organism, while its inner leaflet still surrounds each individual cell body \cite{kirk1999evolution}. In larger, more complex volvocine algae (\textit{Eudorina} to \textit{Volvox}), the entire tripartite layer is continuous over the surface of the organism. In the genus \textit{Volvox}, the outer layer has developed even further and the tripartite layer has become part of the boundary layer, the BZ, while the inner layer has evolved species-specific (CZ3) compartments \cite{RN78}. The architecture of these CZ3 compartments shows certain parallels with the epidermis of most plant leaves \cite{esau1953plant} and even epithelia in animals \cite{dicko2017geometry}, all of which possess an (initially) closely packed, polygonal architecture. Looking at the plasma membranes in animal epithelia, cellulose-based cell walls in epidermal cells of land plants and cellulose-free CZ3 structures of somatic \textit{Volvox} cells as touching compartment boundaries, 
+unicellular ancestor \cite{RN896}. The cell wall of extant \textit{Chlamydomonas} species consists of an outer ``tripartite" layer with a highly regular, quasi-crystalline structure and an inner more amorphous layer. In few-celled volvocine genera with a low degree of developmental complexity, such as \textit{Pandorina}, the tripartite layer is partially split, so that its outer leaflet is continuous across the surface of the organism, while its inner leaflet still surrounds each individual cell body \cite{kirk1999evolution}. In larger, more complex volvocine algae (\textit{Eudorina} to \textit{Volvox}), the entire tripartite layer is continuous over the surface of the organism. In the genus \textit{Volvox}, the outer layer has developed even further and the tripartite layer has become part of the boundary layer, the BZ, while the inner layer has evolved species-specific (CZ3) compartments \cite{RN78}. The architecture of these CZ3 compartments shows striking parallels with the epidermis of most plant leaves \cite{esau1953plant} and even epithelia in animals \cite{dicko2017geometry}, all of which possess an (initially) closely packed, polygonal architecture. Looking at the plasma membranes in animal epithelia, cellulose-based cell walls in epidermal cells of land plants and cellulose-free CZ3 structures of somatic \textit{Volvox} cells as touching compartment boundaries, 
 their packing geometry can be described using the same physical concepts \cite{lemke2021dynamic}. 
 Interestingly, they also share the presence of an adjacent thin ECM layer, which represents a kind of boundary in all of them: the cuticle (secreted by plant epidermis cells), the basal lamina (secreted by animal epithelial cells) and the BZ (secreted by somatic \textit{Volvox} cells). The shared geometrical solution likely represents an example of convergent evolution driven by the common pressure to evolve a monolayer epithelium-like architecture with protective and control functions.
 
@@ -999,46 +997,45 @@ Examination of the stochastic geometry of the space partition formed by CZ3 wall
 along with somatic cell positions, reveals four key findings.
 First, somatic cell growth occurs mainly between stages I-II, whereas CZ3 compartments 
 grow mostly during III-IV (Fig. \ref{fig8}), indicating that ECM production, rather than 
-somatic cell enlargement is the primary driver of visible compartment growth (Table 
+somatic cell enlargement, is the primary driver of visible compartment growth (Table 
 \ref{table:growth}).
-Their surface areas are well-approximated by gamma distributions (\eqref{eq:gamma}) 
+The compartments' surface areas are well-approximated by gamma distributions (\eqref{eq:gamma}) 
 with anterior/posterior hemispheres exhibiting different values of $k$ (\SI, Fig. S8).
 Such area distributions arise in granular and cellular materials 
 \cite{aste2008emergence,miklius2012analytical}; it is novel to observe them 
 for intrinsic structures of an ECM, with non-stationarity in $k$ revealing 
 A/P differentiation. 
 
-Second, the aspect ratio distributions are remarkably invariant throughout the life cycle (Figs. 
-\ref{fig8} and \ref{fig9}), and well-approximated by gamma distributions with stable $k$ 
+Second, the aspect ratio distributions of compartments are remarkably stable throughout the life cycle (Figs. 
+\ref{fig8} and \ref{fig9}), and are well-approximated by gamma distributions with stable $k$ 
 (\SI, Fig. S9).
-Maintaining a fixed $\alpha\approx 1.2$ requires that each compartment enlarges 
+Maintaining a fixed aspect ratio $\alpha\approx 1.2$ requires that each compartment enlarges 
 anisotropically, in strong contrast with the trend in aspect ratio of the overall spheroid, 
 which is both lower and decreases from stages III-IV to less than $1.05$ (Fig. \ref{fig10}F). 
 This lack of local-global coupling suggests that compartment anisotropy could be set by geometric 
-constraints 
-\cite{atia2018geometric} in the cellular configuration prior to stage I and
+constraints in the cellular configuration prior to stage I and
 may explain how the organism maintains (and increases) its sphericity despite the strong 
 non-uniformity in size and shape of its compartments.
 Shape variability in the form of gamma-distributed aspect ratios arises in a large class of 
-epithelial tissues and inert jammed matter \cite{atia2018geometric} which exhibit deviations from optimality in the sense of \eqref{eq:sum_second_moments}. The epithelium-like architecture formed by the CZ3 robustly falls into this class.
+epithelial tissues and inert jammed matter \cite{atia2018geometric} which exhibit deviations from optimal space-partitioning in the sense of \eqref{eq:sum_second_moments}. The epithelium-like architecture formed by the CZ3 robustly falls into this class.
 
-Third, the somatic cell offset increases steadily with compartment area (Fig. \ref{fig8}D) while the whitened offset remains relatively constant (Fig. \ref{fig8}E).
+Third, the somatic cell offset from the compartment centroid increases steadily with compartment area (Fig. \ref{fig8}D) while the whitened offset remains relatively constant (Fig. \ref{fig8}E).
 Both observations suggest a growth-induced deformation in which space is locally dilated (in a tangent plane containing the 
-compartment) as $\R^2 \mapsto \rho \R^2, \rho \ge 1$, which indeed 
+compartment surface) as $\R^2 \mapsto \rho \R^2, \rho \ge 1$, which indeed 
 increases offsets while preserving whitened offsets (\SI, \S B.1).
-Such transformations also naturally preserve the aspect ratio, consistent with earlier observations.
+Such transformations also naturally preserve aspect ratios, consistent with earlier observations.
 The cellular offset angle with respect to the principal stretch axis, on the other hand, 
 is a priori unconstrained by these observations, and in fact we find that it is 
 uniformly distributed in $[0, \pi/2]$ (\SI, Fig. S10).
 This highlights a stochastic decoupling between cell positioning and compartment shape, much 
 like that previously observed between compartment and spheroid principal stretches.
-Again, this may be established before stage I and subsequently scaled by compartment growth\textemdash analogous to two points diverging 
+Likewise, this may be established before stage I and subsequently scaled by compartment growth\textemdash analogous to two points diverging 
 on the surface of an expanding bubble.
 Importantly, \textit{global} dilations of space, likening \textit{Volvox} itself to a bubble, 
 cannot produce the increasing compartment area polydispersity we observe during the life cycle, 
 while \textit{local} dilations as above, likening the CZ3 `epithelium' to a spherical raft 
 of heterogeneously inflating bubbles, can.
-In a continuum limit, such local dilations may be represented by conformal maps \cite{dai2022minimizing}.
+In a continuum limit, such growth-induced local dilations may be represented by conformal maps \cite{dai2022minimizing}.
 %More broadly, these observations reveal an interplay between the intrinsic geometric stochasticity in local structures that cells produce and globally robust developmental features of \textit{Volvox}.
 
 Lastly, the CZ3 `bubbles' transition from a space \textit{partition} to a \textit{packing} whose fraction decreases 
@@ -1047,16 +1044,16 @@ Such transitions are reminiscent of the hydration of foams \cite{phelan1995compu
 (representing migration of ECM across the CZ3 walls, \S \ref{sec:phii_walls}) alleviates contact constraints.
 Unlike classical foams, however, which relax rapidly to circular equilibrium shapes due to weak adhesion, 
 inter-compartment adhesion is likely stronger due to crosslinking and the formation of insoluble networks.
-Such surface tension-adhesion trade-offs can result in acircular equilibria with decreasing packing fraction 
+Such surface tension-adhesion trade-offs are known to result in acircular equilibria with decreasing packing fraction 
 \cite{kim2021embryonic}, unearthing one plausible explanation for the remarkable stability of aspect ratios as the 
 compartments and extracompartmental spaces swell during growth (Fig. \ref{fig5}).
 Notably, in contrast to typical assumptions of epithelial models \cite{bi2015density, kim2021embryonic}, the 
-CZ3 `raft' is a self-assembled extracellular structure whose rheological properties 
+CZ3 `epithelium' is a self-assembled extracellular structure whose rheological properties 
 including tension and adhesion are not under direct control by cells.
 This highlights more broadly the need to probe the rheology of the ECM\textemdash perhaps using microrheological 
 techniques akin to those applied in cytoskeletal studies \cite{microrheology}\textemdash to understand how stochastic 
 local interactions give way to robust global structures.
-Understanding the self-organization of crosslinking ECM components will shed light 
+Understanding the self-organization of crosslinking ECM components \cite{RN583} will shed light 
 on the principles underlying the intricate geometry and stochasticity observed in multicellular extracellular matrices.
 
 %% ANAND: previous version Tue Nov 26 13:00
