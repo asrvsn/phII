@@ -161,48 +161,49 @@ class GroupedPh2Segmentations:
             state['c_n'] += 1
             names_in_folder = set([f.split('.')[0] for f in os.listdir(folder) if not f.startswith('.')])
             folder_name = os.path.basename(folder)
-            for name in names_in_folder:
-                f = os.path.join(folder, name)
-                f_seg = os.path.join(folder, f'{name}.seg')
-                f_seg_ph2 = os.path.join(folder, f'{name}.seg_ph2')
-                f_seg_gon = os.path.join(folder, f'{name}.ant_gonidia')
-                f_seg_off = os.path.join(folder, f'{name}.offspring')
+            if folder_name != 'excluded':
+                for name in names_in_folder:
+                    f = os.path.join(folder, name)
+                    f_seg = os.path.join(folder, f'{name}.seg')
+                    f_seg_ph2 = os.path.join(folder, f'{name}.seg_ph2')
+                    f_seg_gon = os.path.join(folder, f'{name}.ant_gonidia')
+                    f_seg_off = os.path.join(folder, f'{name}.offspring')
 
-                if os.path.isfile(f_seg):
-                    print(f'Found .seg file: {f_seg}, processing...')
-                    assert os.path.isfile(f_seg_gon), f'No .ant_gonidia file at {f_seg_gon}'
-                    anterior_offspring = pickle.load(open(f_seg_gon, 'rb'))
-                    assert os.path.isfile(f_seg_off), f'No .offspring file at {f_seg_off}'
-                    all_offspring = [[roi.asPoly() for roi in sublist] for sublist in pickle.load(open(f_seg_off, 'rb'))]
-                    if os.path.isfile(f_seg_ph2) and (not recompute):
-                        print(f'Found cached .seg_ph2 file: {f_seg_ph2}, not recomputing...')
-                        # Monkey-patch modules
-                        sys.modules['seg_2d'] = microseg.data.seg_2d
-                        sys.modules['plane'] = matgeo.plane
-                        sys.modules['ellipsoid'] = matgeo.ellipsoid
-                        seg = pickle.load(open(f_seg_ph2, 'rb'))
-                        print(type(seg)) # Needed but not sure why.
-                        seg.load_offspring(anterior_offspring, all_offspring)
-                        # assert type(seg) == Ph2Segmentation
-                        state['segs'].append(seg)
-                        state['groups'].append(folder_group)
-                        state['names'].append(folder_name)
-                    elif os.path.isfile(f_seg):
-                        print(f'Computing .seg_ph2 file: {f_seg_ph2}...')
-                        seg = pickle.load(open(f_seg, 'rb'))
-                        seg = Ph2Segmentation(seg, export_path=f_seg.replace('.seg', '.pdf'))
-                        seg.load_offspring(anterior_offspring, all_offspring)
-                        state['segs'].append(seg)
-                        state['groups'].append(folder_group)
-                        state['names'].append(folder_name)
-                        pickle.dump(seg, open(f_seg_ph2, 'wb'))
-                        print(f'Cached: {f_seg_ph2}')
-                    seg.pathname = name
-                    seg.img_path = os.path.join(folder, f'{name}.czi')
-                elif os.path.isdir(f):
-                    get_segmentations_in_folder(f)
-                else:
-                    print(f'Unrecognized file: {f}, skipping...')
+                    if os.path.isfile(f_seg):
+                        print(f'Found .seg file: {f_seg}, processing...')
+                        assert os.path.isfile(f_seg_gon), f'No .ant_gonidia file at {f_seg_gon}'
+                        anterior_offspring = pickle.load(open(f_seg_gon, 'rb'))
+                        assert os.path.isfile(f_seg_off), f'No .offspring file at {f_seg_off}'
+                        all_offspring = [[roi.asPoly() for roi in sublist] for sublist in pickle.load(open(f_seg_off, 'rb'))]
+                        if os.path.isfile(f_seg_ph2) and (not recompute):
+                            print(f'Found cached .seg_ph2 file: {f_seg_ph2}, not recomputing...')
+                            # Monkey-patch modules
+                            sys.modules['seg_2d'] = microseg.data.seg_2d
+                            sys.modules['plane'] = matgeo.plane
+                            sys.modules['ellipsoid'] = matgeo.ellipsoid
+                            seg = pickle.load(open(f_seg_ph2, 'rb'))
+                            print(type(seg)) # Needed but not sure why.
+                            seg.load_offspring(anterior_offspring, all_offspring)
+                            # assert type(seg) == Ph2Segmentation
+                            state['segs'].append(seg)
+                            state['groups'].append(folder_group)
+                            state['names'].append(folder_name)
+                        elif os.path.isfile(f_seg):
+                            print(f'Computing .seg_ph2 file: {f_seg_ph2}...')
+                            seg = pickle.load(open(f_seg, 'rb'))
+                            seg = Ph2Segmentation(seg, export_path=f_seg.replace('.seg', '.pdf'))
+                            seg.load_offspring(anterior_offspring, all_offspring)
+                            state['segs'].append(seg)
+                            state['groups'].append(folder_group)
+                            state['names'].append(folder_name)
+                            pickle.dump(seg, open(f_seg_ph2, 'wb'))
+                            print(f'Cached: {f_seg_ph2}')
+                        seg.pathname = name
+                        seg.img_path = os.path.join(folder, f'{name}.czi')
+                    elif os.path.isdir(f):
+                        get_segmentations_in_folder(f)
+                    else:
+                        print(f'Unrecognized file: {f}, skipping...')
 
         get_segmentations_in_folder(folder)
         groups = {k: [seg for seg, group in zip(state['segs'], state['groups']) if group == k] for k in set(state['groups'])}

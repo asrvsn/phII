@@ -16,7 +16,7 @@ from microseg.utils.data import load_stack
 from matgeo import Ellipsoid, PlanarPolygon, Plane, Sphere
 from matgeo.voronoi import poly_bounded_voronoi
 from im_utils import *
-from matgeo.utils.array import flatten_list
+from asrvsn_math.array import flatten_list
 
 def match_ph2_autofl(ph2_: np.ndarray, autofl_: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     '''
@@ -173,6 +173,14 @@ class Ph2Segmentation(Segmentation2D):
         'Voronoi AP position': Metric(
             lambda self, _, __, vp: self.get_ap_pos(vp.centroid()),
             normalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()), # Is nondimensional but not normalized
+        ),
+        'Distance to center': Metric(
+            lambda self, p, _, __: la.norm(p.centroid() - self.ellipse.v),
+            nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
+        ),
+        'Mahalanobis distance to center': Metric(
+            lambda self, p, _, __: self.ellipse.mahalanobis_distance(p.centroid()),
+            nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
     }
     # Metrics computed for the entire segmentation
