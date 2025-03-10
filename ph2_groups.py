@@ -2,7 +2,7 @@
 Ph2 segmentations grouped by lifecycle stage
 '''
 
-from typing import Dict, List, Generator
+from typing import Dict, List, Generator, Any
 import pickle
 import os
 from tqdm import tqdm
@@ -81,12 +81,12 @@ class GroupedPh2Segmentations:
         assert len(segs) == 1, f'Zero or multiple segmentations with pathname {pathname}'
         return segs[0]
 
-    def compute_metrics(self):
+    def recompute(self):
         '''
         Recompute all segmentations
         '''
         for seg in tqdm(list(self.all_segmentations)):
-            seg.compute_metrics()
+            seg.recompute()
         ## Normalized metrics
         self.normalized_metrics = {
             name: np.concatenate([
@@ -162,6 +162,11 @@ class GroupedPh2Segmentations:
             names_in_folder = set([f.split('.')[0] for f in os.listdir(folder) if not f.startswith('.')])
             folder_name = os.path.basename(folder)
             if folder_name != 'excluded':
+                # Monkey-patch modules for Segmentation2D unpickling
+                sys.modules['seg_2d'] = microseg.data.seg_2d
+                sys.modules['plane'] = matgeo.plane
+                sys.modules['ellipsoid'] = matgeo.ellipsoid
+
                 for name in names_in_folder:
                     f = os.path.join(folder, name)
                     f_seg = os.path.join(folder, f'{name}.seg')
@@ -177,13 +182,8 @@ class GroupedPh2Segmentations:
                         all_offspring = [[roi.asPoly() for roi in sublist] for sublist in pickle.load(open(f_seg_off, 'rb'))]
                         if os.path.isfile(f_seg_ph2) and (not recompute):
                             print(f'Found cached .seg_ph2 file: {f_seg_ph2}, not recomputing...')
-                            # Monkey-patch modules
-                            sys.modules['seg_2d'] = microseg.data.seg_2d
-                            sys.modules['plane'] = matgeo.plane
-                            sys.modules['ellipsoid'] = matgeo.ellipsoid
                             seg = pickle.load(open(f_seg_ph2, 'rb'))
                             print(type(seg)) # Needed but not sure why.
-                            seg.load_offspring(anterior_offspring, all_offspring)
                             # assert type(seg) == Ph2Segmentation
                             state['segs'].append(seg)
                             state['groups'].append(folder_group)
@@ -191,8 +191,9 @@ class GroupedPh2Segmentations:
                         elif os.path.isfile(f_seg):
                             print(f'Computing .seg_ph2 file: {f_seg_ph2}...')
                             seg = pickle.load(open(f_seg, 'rb'))
-                            seg = Ph2Segmentation(seg, export_path=f_seg.replace('.seg', '.pdf'))
-                            seg.load_offspring(anterior_offspring, all_offspring)
+                            seg = Ph2Segmentation(seg, anterior_offspring, all_offspring)
+                            seg.recompute()
+                            print('Computed polygons & metrics')
                             state['segs'].append(seg)
                             state['groups'].append(folder_group)
                             state['names'].append(folder_name)

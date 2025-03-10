@@ -1,19 +1,21 @@
 '''
 PhII segmentation
 '''
-from typing import Tuple, List, Dict, Callable
+from typing import Tuple, List, Dict, Callable, Optional
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 from scipy.spatial.distance import cdist
 import numpy as np
 import numpy.linalg as la
 import os
-
+import pyqtgraph as pg
 import asrvsn_mpl as pt
 from microseg.data.seg_2d import Segmentation2D
 from microseg.utils.mask import mask_to_com, mask_to_polygons, mask_to_adjacency
-from microseg.utils.data import load_stack
-from matgeo import Ellipsoid, PlanarPolygon, Plane, Sphere
+from microseg.utils.data import load_stack, get_voxel_size
+from microseg.widgets.pg_gl import GrabbableGLViewWindow, GLZStackItem, GLTriangulationItem
+import microseg.utils.pg as pgutil
+from matgeo import Ellipse, PlanarPolygon, Plane, Sphere, Ellipsoid, Triangulation
 from matgeo.voronoi import poly_bounded_voronoi
 from im_utils import *
 from asrvsn_math.array import flatten_list
@@ -111,6 +113,10 @@ class Ph2Segmentation(Segmentation2D):
         ),
         'Aspect ratio': Metric(
             lambda self, p, _, __: p.aspect_ratio(),
+            normalize = lambda xs: (xs - 1) / (xs.mean() - 1), # Is nondimensional but not normalized
+        ),
+        'Cell aspect ratio': Metric(
+            lambda self, _, cp, __: cp.aspect_ratio(),
             normalize = lambda xs: (xs - 1) / (xs.mean() - 1), # Is nondimensional but not normalized
         ),
         # Sensitive to affine transforms
@@ -277,7 +283,7 @@ class Ph2Segmentation(Segmentation2D):
                 np.mean([p.circular_radius() for p in self.all_offspring]),
     }
     
-    def __init__(self, seg: Segmentation2D, export_path: str=None):
+    def __init__(self, seg: Segmentation2D, anterior_offspring: List[PlanarPolygon], all_offspring: List[List[PlanarPolygon]]):
         self.pathname = None
         self.img_path = None
         self.czxy = seg.czxy
@@ -300,19 +306,21 @@ class Ph2Segmentation(Segmentation2D):
         # Masks
         self.ph2_mask, self.autofl_mask = match_ph2_autofl(self.mask[0], self.mask[1])
         print(f'Matched masks')
-        # # Adjacency
-        # self.adjacency = mask_to_adjacency(self.ph2_mask)
-        # Polygons & metrics
-        self.compute_polygons()
-        self.compute_metrics()
-        if not export_path is None:
-            self.export_figure(export_path)
-
-    def load_offspring(self, anterior_offspring: List[PlanarPolygon], all_offspring: List[List[PlanarPolygon]]):
+        # Offspring
         self.display_anterior_offspring = [p.hullify() for p in anterior_offspring]
         self.anterior_offspring = [p.set_res(*self.upp) for p in self.display_anterior_offspring]
         self.display_all_offspring = all_offspring # Retain z-structure for display at correct focal plane
         self.all_offspring = [p.set_res(*self.upp) for p in flatten_list(all_offspring)]
+        print(f'Loaded offspring')
+        # # Adjacency
+        # self.adjacency = mask_to_adjacency(self.ph2_mask)
+        # # Polygons & metrics
+        # self.compute_polygons()
+        # self.compute_metrics()
+
+    def recompute(self):
+        self.compute_polygons()
+        self.compute_metrics()
         
     def compute_polygons(self):
         '''
@@ -322,15 +330,15 @@ class Ph2Segmentation(Segmentation2D):
         self.display_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.ph2_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
         self.display_cell_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.autofl_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
         self.display_cell_coms = np.array([p.centroid() for p in self.display_cell_polygons])
-        self.display_ellipse = Ellipsoid.from_poly(self.display_outline)
+        self.display_ellipse = Ellipse.from_poly(self.display_outline)
         ## Rescale to proper units
         self.polygons = [p.set_res(*self.upp) for p in self.display_polygons]
         self.cell_polygons = [p.set_res(*self.upp) for p in self.display_cell_polygons]
         self.cell_coms = np.array([p.centroid() for p in self.cell_polygons])
-        self.ellipse = Ellipsoid.from_poly(self.outline)
+        self.ellipse = Ellipse.from_poly(self.outline)
         ## Compute Voronoi
         self.compute_voronoi_polygons()
-        print('Computed polygons and ellipse')
+        # print('Computed polygons and ellipse')
 
     def compute_voronoi_polygons(self):
         # Compute Voronoi restricted to the outline (rescaled to dimensionless units)
@@ -340,7 +348,7 @@ class Ph2Segmentation(Segmentation2D):
         self.all_display_cell_coms = np.array([p.centroid() for p in self.all_display_cell_polygons])
         self.all_cell_coms = np.array([p.centroid() for p in self.all_cell_polygons])
         boundary = PlanarPolygon.from_shape(self.combined.shape)
-        _, vor_polygons, __ = boundary.voronoi_tessellation(self.all_display_cell_coms)
+        vor_polygons = boundary.voronoi_tessellate(self.all_display_cell_coms).polygons
         Nv = len(vor_polygons)
         assert Nv == len(self.all_display_cell_polygons), 'Must have a Voronoi polygon for each cell'
         # Re-order vor_polygons so it is 1-1 with self.polygons, self.cell_polygons on the first N indices
@@ -365,7 +373,7 @@ class Ph2Segmentation(Segmentation2D):
         self.matched_display_vor_polygons = [q for [q] in self.matched_display_vor_polygons] # Intersection must be simple and proper
         self.matched_vor_polygons = [p.set_res(*self.upp) for p in self.matched_display_vor_polygons]
         assert len(self.matched_vor_polygons) == N, 'Must have a matched Voronoi polygon for each compartment'
-        print('Computed Voronoi polygons')
+        # print('Computed Voronoi polygons')
         
     def compute_metrics(self):
         '''
@@ -549,6 +557,65 @@ class Ph2Segmentation(Segmentation2D):
 
     def get_raw_slice(self, i: int) -> np.ndarray:
         return load_stack(self.img_path)[i] # img is ZXYC
+    
+    def project_to_ellipsoid(self, ell: Ellipsoid, poly: PlanarPolygon, cell_poly: PlanarPolygon) -> Tuple[PlanarPolygon, PlanarPolygon]:
+        poly = ell.project_poly_z(poly)
+        cell_poly = ell.project_poly_z(cell_poly, plane=poly.plane) # Use same plane as poly
+        return poly, cell_poly
+
+    def render_ellipsoid_projection(self):
+        ell = self.ellipse.revolve_major(v_z=-1.2*self.ellipse.get_minor_radius())
+        polys = [p.embed_XY() for p in self.polygons]
+        cell_polys = [p.embed_XY() for p in self.cell_polygons]
+        proj_all_polys = np.array([self.project_to_ellipsoid(ell, p, c) for p, c in zip(self.polygons, self.cell_polygons)])
+        centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.cell_polygons])) # Use cells as centers
+        proj_polys = proj_all_polys[:,0]
+        proj_cell_polys = proj_all_polys[:,1]
+        proj_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_cell_polys]) # Use cells as centers
+        def fun(vw):
+            center = centers.mean(axis=0)
+            viewsize = la.norm(centers - proj_centers, axis=1).max()
+            vw.opts['center'] = pg.Vector(*(center))
+            vw.setCameraPosition(distance=viewsize * 1.3)
+            pgutil.ppolygons_3d(vw, polys, centers)
+            # pgutil.ppolygons_3d(vw, cell_polys, centers)
+            pgutil.ppolygons_3d(vw, proj_polys, proj_centers)
+            # pgutil.ppolygons_3d(vw, proj_cell_polys, proj_centers)
+            pgutil.ellipsoid_3d(vw, ell)
+        return pgutil.run_gl(fun)
+    
+    def render_chull_projection(self):
+        stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
+        scale = get_voxel_size(self.img_path, fmt='XYZ')
+        polys = [p.embed_XY() for p in self.polygons]
+        poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.polygons]))
+        # Compute XY coordinates of stack
+        x = np.arange(stack.shape[0]) 
+        y = np.arange(stack.shape[1]) 
+        xy = np.stack(np.meshgrid(x, y, indexing='ij'), axis=-1).reshape(-1,2)
+        # Get mask of those contained inside the bounding ellipse
+        mask = self.ellipse.contains(xy * scale[:2])
+        xy_invalid = xy[~mask]
+        # Set rest to zero
+        stack[xy_invalid[:,0], xy_invalid[:,1], :] = 0
+        # Compute tri and hull
+        zmax = stack.shape[2] * scale[2]
+        tri = Triangulation.from_volume(stack, spacing=scale) + np.array([0,0,zmax * 0.5])
+        hull = tri.hullify()
+        proj_polys = [hull.project_poly_z(p) for p in self.polygons]
+        proj_poly_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_polys])
+        def fun(vw):
+            center = tri.pts.mean(axis=0)
+            vw.opts['center'] = pg.Vector(*(center))
+            viewsize = la.norm(tri.pts - center, axis=1).max()
+            vw.setCameraPosition(distance=viewsize * 1.3)
+            # vol = GLZStackItem(self.czxy[0], xyz_scale=self.upp)
+            surf = GLTriangulationItem(tri)
+            # surf = GLTriangulationItem(hull)
+            vw.addItem(surf)
+            pgutil.ppolygons_3d(vw, polys, poly_centers)
+            pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers)
+        return pgutil.run_gl(fun)
 
     @property
     def n_polygons(self) -> int:
