@@ -7,6 +7,7 @@ import scipy.stats as stats
 from scipy.spatial.distance import cdist
 import numpy as np
 import numpy.linalg as la
+import pdb
 import os
 import pyqtgraph as pg
 import asrvsn_mpl as pt
@@ -189,7 +190,7 @@ class Ph2Segmentation(Segmentation2D):
             nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
         'Chull-projected normal': Metric(
-            lambda self, p, _, __: self.hull.project_poly_z(p).n @ np.array([0,0,-1]),
+            lambda self, p, _, __: self.hull.project_poly_z(p).normal @ np.array([0,0,1]),
         ),
     }
     # Metrics computed for the entire segmentation
@@ -328,9 +329,10 @@ class Ph2Segmentation(Segmentation2D):
         # self.compute_polygons()
         # self.compute_metrics()
 
-    def recompute(self):
-        self.compute_polygons()
-        self.compute_triangulations()
+    def recompute(self, metrics_only: bool=False):
+        if not metrics_only:
+            self.compute_polygons()
+            self.compute_triangulations()
         self.compute_metrics()
         
     def compute_polygons(self):
@@ -627,6 +629,8 @@ class Ph2Segmentation(Segmentation2D):
             vw.addItem(surf)
             pgutil.ppolygons_3d(vw, polys, poly_centers)
             pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers)
+            # ell = self.ellipse.revolve_major() + np.array([0, 0, self.ellipse.get_minor_radius() - 40])
+            # pgutil.ellipsoid_3d(vw, ell)
         return pgutil.run_gl(fun)
 
     @property
