@@ -188,6 +188,9 @@ class Ph2Segmentation(Segmentation2D):
             lambda self, p, _, __: self.ellipse.mahalanobis_distance(p.centroid()),
             nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
+        'Chull-projected normal': Metric(
+            lambda self, p, _, __: self.hull.project_poly_z(p).n @ np.array([0,0,-1]),
+        ),
     }
     # Metrics computed for the entire segmentation
     computed_seg_metrics = {
@@ -283,9 +286,16 @@ class Ph2Segmentation(Segmentation2D):
                 np.mean([p.circular_radius() for p in self.all_offspring]),
     }
     
-    def __init__(self, seg: Segmentation2D, anterior_offspring: List[PlanarPolygon], all_offspring: List[List[PlanarPolygon]]):
-        self.pathname = None
-        self.img_path = None
+    def __init__(self, 
+            seg: Segmentation2D, 
+            anterior_offspring: List[PlanarPolygon], 
+            all_offspring: List[List[PlanarPolygon]],
+            pathname: str,
+            img_path: str,
+            recompute: bool=False,
+        ):
+        self.pathname = pathname
+        self.img_path = img_path
         self.czxy = seg.czxy
         self.upp = seg.upp
         self.settings = seg.settings
@@ -320,6 +330,7 @@ class Ph2Segmentation(Segmentation2D):
 
     def recompute(self):
         self.compute_polygons()
+        self.compute_triangulations()
         self.compute_metrics()
         
     def compute_polygons(self):
@@ -374,6 +385,23 @@ class Ph2Segmentation(Segmentation2D):
         self.matched_vor_polygons = [p.set_res(*self.upp) for p in self.matched_display_vor_polygons]
         assert len(self.matched_vor_polygons) == N, 'Must have a matched Voronoi polygon for each compartment'
         # print('Computed Voronoi polygons')
+
+    def compute_triangulations(self):
+        self.stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
+        scale = get_voxel_size(self.img_path, fmt='XYZ')
+        # Compute XY coordinates of stack
+        x = np.arange(self.stack.shape[0]) 
+        y = np.arange(self.stack.shape[1]) 
+        xy = np.stack(np.meshgrid(x, y, indexing='ij'), axis=-1).reshape(-1,2)
+        # Get mask of those contained inside the bounding ellipse
+        mask = self.ellipse.contains(xy * scale[:2])
+        xy_invalid = xy[~mask]
+        # Set rest to zero
+        self.stack[xy_invalid[:,0], xy_invalid[:,1], :] = 0
+        # Compute tri and hull
+        zmax = self.stack.shape[2] * scale[2]
+        self.tri = Triangulation.from_volume(self.stack, method='marching_cubes', spacing=scale) + np.array([0,0,zmax * 0.5])
+        self.hull = self.tri.hullify()
         
     def compute_metrics(self):
         '''
@@ -585,33 +613,17 @@ class Ph2Segmentation(Segmentation2D):
         return pgutil.run_gl(fun)
     
     def render_chull_projection(self):
-        stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
-        scale = get_voxel_size(self.img_path, fmt='XYZ')
         polys = [p.embed_XY() for p in self.polygons]
         poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.polygons]))
-        # Compute XY coordinates of stack
-        x = np.arange(stack.shape[0]) 
-        y = np.arange(stack.shape[1]) 
-        xy = np.stack(np.meshgrid(x, y, indexing='ij'), axis=-1).reshape(-1,2)
-        # Get mask of those contained inside the bounding ellipse
-        mask = self.ellipse.contains(xy * scale[:2])
-        xy_invalid = xy[~mask]
-        # Set rest to zero
-        stack[xy_invalid[:,0], xy_invalid[:,1], :] = 0
-        # Compute tri and hull
-        zmax = stack.shape[2] * scale[2]
-        tri = Triangulation.from_volume(stack, spacing=scale) + np.array([0,0,zmax * 0.5])
-        hull = tri.hullify()
-        proj_polys = [hull.project_poly_z(p) for p in self.polygons]
+        proj_polys = [self.hull.project_poly_z(p) for p in self.polygons]
         proj_poly_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_polys])
         def fun(vw):
-            center = tri.pts.mean(axis=0)
+            center = self.tri.pts.mean(axis=0)
             vw.opts['center'] = pg.Vector(*(center))
-            viewsize = la.norm(tri.pts - center, axis=1).max()
+            viewsize = la.norm(self.tri.pts - center, axis=1).max()
             vw.setCameraPosition(distance=viewsize * 1.3)
             # vol = GLZStackItem(self.czxy[0], xyz_scale=self.upp)
-            surf = GLTriangulationItem(tri)
-            # surf = GLTriangulationItem(hull)
+            surf = GLTriangulationItem(self.tri)
             vw.addItem(surf)
             pgutil.ppolygons_3d(vw, polys, poly_centers)
             pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers)

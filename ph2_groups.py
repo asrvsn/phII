@@ -191,7 +191,8 @@ class GroupedPh2Segmentations:
                         elif os.path.isfile(f_seg):
                             print(f'Computing .seg_ph2 file: {f_seg_ph2}...')
                             seg = pickle.load(open(f_seg, 'rb'))
-                            seg = Ph2Segmentation(seg, anterior_offspring, all_offspring)
+                            img_path = os.path.join(folder, f'{name}.czi')
+                            seg = Ph2Segmentation(seg, anterior_offspring, all_offspring, name, img_path)
                             seg.recompute()
                             print('Computed polygons & metrics')
                             state['segs'].append(seg)
@@ -199,8 +200,6 @@ class GroupedPh2Segmentations:
                             state['names'].append(folder_name)
                             pickle.dump(seg, open(f_seg_ph2, 'wb'))
                             print(f'Cached: {f_seg_ph2}')
-                        seg.pathname = name
-                        seg.img_path = os.path.join(folder, f'{name}.czi')
                     elif os.path.isdir(f):
                         get_segmentations_in_folder(f)
                     else:

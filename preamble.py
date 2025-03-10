@@ -101,7 +101,7 @@ def pad_top_ax(ax, y_frac: float=0.1):
 
 data_path = os.path.abspath('../data')
 figures_path = os.path.abspath('../figures')
-recompute_segs = False # Set to true if pickled objects don't load as expected on your machine
+recompute_segs = True # Set to true if pickled objects don't load as expected on your machine
 
 def save_fig(fig: plt.Figure, ph2_name: str, exts=save_exts, dpi=300, compressed_dpi=100, jpeg_quality=85, autorasterize=True):
     for ext in exts:
@@ -158,4 +158,4 @@ if __name__ == '__main__':
     # print(f'# segmentations: {gsegs.n_segmentations}')
 
     # gsegs.get_by_name('II')[0].render_ellipsoid_projection()
-    random.choice(gsegs.get_by_name('IV')).render_chull_projection()
+    random.choice(gsegs.get_by_name('II')).render_chull_projection()
