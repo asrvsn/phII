@@ -149,13 +149,13 @@ def save_fig(fig: plt.Figure, ph2_name: str, exts=save_exts, dpi=300, compressed
 
 
 if __name__ == '__main__':
-    import random
-    gsegs = GroupedPh2Segmentations.from_folder(data_path, recompute=recompute_segs)
-    assert len(gsegs) > 0, f'No segmentations found in {data_path}'
-    print('All segmentations complete.')
-    
-    # gsegs.compute_metrics()
-    # print(f'# segmentations: {gsegs.n_segmentations}')
+    import argparse
+    parser = argparse.ArgumentParser(description='Process segmentation data.')
+    parser.add_argument('filepath', type=str, help='Path to the input file (mandatory)')
+    args = parser.parse_args()
+    fp = args.filepath
+    assert os.path.splitext(fp)[1] == '.seg_ph2', f'File must have .seg_ph2 extension: {fp}'
 
-    # gsegs.get_by_name('II')[0].render_ellipsoid_projection()
-    random.choice(gsegs.get_by_name('II')).render_chull_projection()
+    seg = pickle.load(open(fp, 'rb'))
+    # seg.render_ellipsoid_projection()
+    seg.render_chull_projection()

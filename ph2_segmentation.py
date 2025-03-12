@@ -619,18 +619,26 @@ class Ph2Segmentation(Segmentation2D):
         poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.polygons]))
         proj_polys = [self.hull.project_poly_z(p) for p in self.polygons]
         proj_poly_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_polys])
+
+        stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
+        scale = get_voxel_size(self.img_path, fmt='XYZ')
+        # Compute tri and hull
+        zmax = stack.shape[2] * scale[2]
+        tri = Triangulation.from_volume(stack, method='marching_cubes', spacing=scale) + np.array([0,0,zmax * 0.5])
         def fun(vw):
-            center = self.tri.pts.mean(axis=0)
+            center = tri.pts.mean(axis=0)
             vw.opts['center'] = pg.Vector(*(center))
-            viewsize = la.norm(self.tri.pts - center, axis=1).max()
+            viewsize = la.norm(tri.pts - center, axis=1).max()
             vw.setCameraPosition(distance=viewsize * 1.3)
             # vol = GLZStackItem(self.czxy[0], xyz_scale=self.upp)
-            surf = GLTriangulationItem(self.tri)
+            surf = GLTriangulationItem(tri)
             vw.addItem(surf)
             pgutil.ppolygons_3d(vw, polys, poly_centers)
+            # pgutil.outlines_3d(vw, polys)
             pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers)
             # ell = self.ellipse.revolve_major() + np.array([0, 0, self.ellipse.get_minor_radius() - 40])
             # pgutil.ellipsoid_3d(vw, ell)
+            pgutil.ellipse_3d(vw, self.ellipse, z=zmax*1.5)
         return pgutil.run_gl(fun)
 
     @property

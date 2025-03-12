@@ -159,7 +159,8 @@ class GroupedPh2Segmentations:
             print(f'Processing folder {folder}')
             folder_group = state['c_n']
             state['c_n'] += 1
-            names_in_folder = set([f.split('.')[0] for f in os.listdir(folder) if not f.startswith('.')])
+            # Use a sorted list instead of a set for deterministic ordering
+            names_in_folder = sorted(list(set([f.split('.')[0] for f in os.listdir(folder) if not f.startswith('.')])))
             folder_name = os.path.basename(folder)
             if folder_name != 'excluded':
                 # Monkey-patch modules for Segmentation2D unpickling
