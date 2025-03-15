@@ -178,9 +178,9 @@ class GroupedPh2Segmentations:
                     if os.path.isfile(f_seg):
                         print(f'Found .seg file: {f_seg}, processing...')
                         assert os.path.isfile(f_seg_gon), f'No .ant_gonidia file at {f_seg_gon}'
-                        anterior_offspring = pickle.load(open(f_seg_gon, 'rb'))
+                        anterior_offspring = [p.migrate_OLD() for p in pickle.load(open(f_seg_gon, 'rb'))] # Need to migrate from old type
                         assert os.path.isfile(f_seg_off), f'No .offspring file at {f_seg_off}'
-                        all_offspring = [[roi.asPoly() for roi in sublist] for sublist in pickle.load(open(f_seg_off, 'rb'))]
+                        all_offspring = [[roi.asPoly().migrate_OLD() for roi in sublist] for sublist in pickle.load(open(f_seg_off, 'rb'))] # Need to migrate from old type
                         if os.path.isfile(f_seg_ph2) and (not recompute):
                             print(f'Found cached .seg_ph2 file: {f_seg_ph2}, not recomputing...')
                             seg = pickle.load(open(f_seg_ph2, 'rb'))

@@ -20,6 +20,7 @@ from matgeo import Ellipse, PlanarPolygon, Plane, Sphere, Ellipsoid, Triangulati
 from matgeo.voronoi import poly_bounded_voronoi
 from im_utils import *
 from asrvsn_math.array import flatten_list
+from asrvsn_math.vectors import vec_angle_deg, vec_angle
 
 def match_ph2_autofl(ph2_: np.ndarray, autofl_: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     '''
@@ -302,12 +303,14 @@ class Ph2Segmentation(Segmentation2D):
         self.settings = seg.settings
         self.zproj = seg.zproj
         self.img = seg.img
-        self.outline = seg.outline
+        self.outline = seg.outline.migrate_OLD() # Need to migrate from old type
         self.cp_mask = seg.cp_mask
         self.mask = seg.mask
         assert not self.outline is None, 'Must provide outline'
         self.display_outline = self.outline.copy()
+        self.display_ellipse = Ellipse.from_poly(self.display_outline)
         self.outline = self.outline.set_res(*self.upp) # Do not recompute
+        self.ellipse = Ellipse.from_poly(self.outline)
         # Data
         self.ph2 = self.zproj[0]
         self.autofl = self.zproj[1]
@@ -331,24 +334,51 @@ class Ph2Segmentation(Segmentation2D):
 
     def recompute(self, metrics_only: bool=False):
         if not metrics_only:
-            self.compute_polygons()
             self.compute_triangulations()
+            self.compute_polygons()
         self.compute_metrics()
+
+    def compute_triangulations(self, chan: int=0, level: float=0.5):
+        stack = load_stack(self.img_path)[:, :, :, chan].transpose(1,2,0) # img is ZXYC
+        scale = get_voxel_size(self.img_path, fmt='XYZ')
+        # Compute XY coordinates of stack
+        x = np.arange(stack.shape[0])
+        y = np.arange(stack.shape[1]) 
+        xy = np.stack(np.meshgrid(x, y, indexing='ij'), axis=-1).reshape(-1,2)
+        # Get mask of those contained inside the bounding ellipse
+        mask = self.ellipse.contains(xy * scale[:2])
+        xy_invalid = xy[~mask]
+        # Set rest to zero
+        stack[xy_invalid[:,0], xy_invalid[:,1], :] = 0
+        # Compute tri and hull
+        zmax = stack.shape[2] * scale[2]
+        level = (stack.max() - stack.min()) * level + stack.min()
+        self.tri = Triangulation.from_volume(stack, method='marching_cubes', spacing=scale, level=level) + np.array([0,0,zmax * 0.5])
+        self.hull = self.tri.hullify()
         
     def compute_polygons(self):
         '''
         Compute the polygons
         '''
         # Polygons
-        self.display_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.ph2_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
-        self.display_cell_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.autofl_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
-        self.display_cell_coms = np.array([p.centroid() for p in self.display_cell_polygons])
-        self.display_ellipse = Ellipse.from_poly(self.display_outline)
+        self.orig_display_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.ph2_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
+        self.orig_display_cell_polygons = [PlanarPolygon(p) for p in mask_to_polygons(self.autofl_mask, rdp_eps=self.rdp_eps, erode=self.mask_erode, dilate=self.mask_dilate)]
+        self.orig_display_cell_coms = np.array([p.centroid() for p in self.orig_display_cell_polygons])
         ## Rescale to proper units
-        self.polygons = [p.set_res(*self.upp) for p in self.display_polygons]
-        self.cell_polygons = [p.set_res(*self.upp) for p in self.display_cell_polygons]
-        self.cell_coms = np.array([p.centroid() for p in self.cell_polygons])
-        self.ellipse = Ellipse.from_poly(self.outline)
+        self.orig_polygons = [p.set_res(*self.upp) for p in self.orig_display_polygons]
+        self.orig_cell_polygons = [p.set_res(*self.upp) for p in self.orig_display_cell_polygons]
+        self.orig_cell_coms = np.array([p.centroid() for p in self.orig_cell_polygons])
+        # Mask by planarity
+        self.orig_poly_angles = np.array([vec_angle_deg(self.hull.project_poly_z(p).normal, np.array([0,0,-1])) for p in self.orig_polygons])
+        print(f'Poly angles: min: {self.orig_poly_angles.min()}, max: {self.orig_poly_angles.max()}, mean: {self.orig_poly_angles.mean()}')
+        self.poly_mask = self.orig_poly_angles < 10
+        self.display_polygons = np.array(self.orig_display_polygons)[self.poly_mask]
+        self.display_cell_polygons = np.array(self.orig_display_cell_polygons)[self.poly_mask]
+        self.display_cell_coms = self.orig_display_cell_coms[self.poly_mask]
+        self.polygons = np.array(self.orig_polygons)[self.poly_mask]
+        self.cell_polygons = np.array(self.orig_cell_polygons)[self.poly_mask]
+        self.cell_coms = self.orig_cell_coms[self.poly_mask]
+        print(f'Filtered from {len(self.orig_polygons)} to {len(self.polygons)} polygons')
         ## Compute Voronoi
         self.compute_voronoi_polygons()
         # print('Computed polygons and ellipse')
@@ -387,23 +417,6 @@ class Ph2Segmentation(Segmentation2D):
         self.matched_vor_polygons = [p.set_res(*self.upp) for p in self.matched_display_vor_polygons]
         assert len(self.matched_vor_polygons) == N, 'Must have a matched Voronoi polygon for each compartment'
         # print('Computed Voronoi polygons')
-
-    def compute_triangulations(self):
-        self.stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
-        scale = get_voxel_size(self.img_path, fmt='XYZ')
-        # Compute XY coordinates of stack
-        x = np.arange(self.stack.shape[0]) 
-        y = np.arange(self.stack.shape[1]) 
-        xy = np.stack(np.meshgrid(x, y, indexing='ij'), axis=-1).reshape(-1,2)
-        # Get mask of those contained inside the bounding ellipse
-        mask = self.ellipse.contains(xy * scale[:2])
-        xy_invalid = xy[~mask]
-        # Set rest to zero
-        self.stack[xy_invalid[:,0], xy_invalid[:,1], :] = 0
-        # Compute tri and hull
-        zmax = self.stack.shape[2] * scale[2]
-        self.tri = Triangulation.from_volume(self.stack, method='marching_cubes', spacing=scale) + np.array([0,0,zmax * 0.5])
-        self.hull = self.tri.hullify()
         
     def compute_metrics(self):
         '''
@@ -615,30 +628,27 @@ class Ph2Segmentation(Segmentation2D):
         return pgutil.run_gl(fun)
     
     def render_chull_projection(self):
-        polys = [p.embed_XY() for p in self.polygons]
-        poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.polygons]))
-        proj_polys = [self.hull.project_poly_z(p) for p in self.polygons]
+        self.recompute()
+        polys = [p.embed_XY() for p in self.orig_polygons]
+        poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.orig_polygons]))
+        proj_polys = [self.hull.project_poly_z(p) for p in self.orig_polygons]
         proj_poly_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_polys])
-
-        stack = load_stack(self.img_path)[:, :, :, 0].transpose(1,2,0) # img is ZXYC
-        scale = get_voxel_size(self.img_path, fmt='XYZ')
-        # Compute tri and hull
-        zmax = stack.shape[2] * scale[2]
-        tri = Triangulation.from_volume(stack, method='marching_cubes', spacing=scale) + np.array([0,0,zmax * 0.5])
+        angles = self.orig_poly_angles
+        mask = self.poly_mask.astype(int)
         def fun(vw):
-            center = tri.pts.mean(axis=0)
+            center = self.tri.pts.mean(axis=0)
             vw.opts['center'] = pg.Vector(*(center))
-            viewsize = la.norm(tri.pts - center, axis=1).max()
+            viewsize = la.norm(self.tri.pts - center, axis=1).max()
             vw.setCameraPosition(distance=viewsize * 1.3)
             # vol = GLZStackItem(self.czxy[0], xyz_scale=self.upp)
-            surf = GLTriangulationItem(tri)
+            surf = GLTriangulationItem(self.tri)
             vw.addItem(surf)
-            pgutil.ppolygons_3d(vw, polys, poly_centers)
+            pgutil.ppolygons_3d(vw, polys, poly_centers, colormap=mask)
             # pgutil.outlines_3d(vw, polys)
-            pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers)
+            # pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers, colormap=mask)
             # ell = self.ellipse.revolve_major() + np.array([0, 0, self.ellipse.get_minor_radius() - 40])
             # pgutil.ellipsoid_3d(vw, ell)
-            pgutil.ellipse_3d(vw, self.ellipse, z=zmax*1.5)
+            # pgutil.ellipse_3d(vw, self.ellipse, z=zmax*1.5)
         return pgutil.run_gl(fun)
 
     @property

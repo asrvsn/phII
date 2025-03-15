@@ -159,3 +159,7 @@ if __name__ == '__main__':
     seg = pickle.load(open(fp, 'rb'))
     # seg.render_ellipsoid_projection()
     seg.render_chull_projection()
+
+    # gsegs = GroupedPh2Segmentations.from_folder(data_path, recompute=recompute_segs)
+    # assert len(gsegs) > 0, f'No segmentations found in {data_path}'
+    # print('All segmentations complete.')
