@@ -309,6 +309,7 @@ class Ph2Segmentation(Segmentation2D):
         assert not self.outline is None, 'Must provide outline'
         self.display_outline = self.outline.copy()
         self.display_ellipse = Ellipse.from_poly(self.display_outline)
+        print(self.upp)
         self.outline = self.outline.set_res(*self.upp) # Do not recompute
         self.ellipse = Ellipse.from_poly(self.outline)
         # Data
@@ -368,7 +369,13 @@ class Ph2Segmentation(Segmentation2D):
         self.orig_polygons = [p.set_res(*self.upp) for p in self.orig_display_polygons]
         self.orig_cell_polygons = [p.set_res(*self.upp) for p in self.orig_display_cell_polygons]
         self.orig_cell_coms = np.array([p.centroid() for p in self.orig_cell_polygons])
-        # Mask by planarity
+        # Perform correction
+        ## 0. Determine shape of contact patch (take to be ellipsoid)
+        ## 1. In elliptically symmetric rings, calculate systematic second moment change induced by deformation
+        ## 2. Perform area-preserving inversion of this deformation
+        ## 3. Upgrade planarpolygon library with methods to handle arbitrarily oriented polygons
+        ## 4. From original position of cell within compartment, perform same transform of that point and use in offset calculations
+        ## 5. Leave the cell polygons as-is?
         self.orig_poly_angles = np.array([vec_angle_deg(self.hull.project_poly_z(p).normal, np.array([0,0,-1])) for p in self.orig_polygons])
         print(f'Poly angles: min: {self.orig_poly_angles.min()}, max: {self.orig_poly_angles.max()}, mean: {self.orig_poly_angles.mean()}')
         self.poly_mask = self.orig_poly_angles < 10

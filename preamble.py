@@ -15,7 +15,7 @@ from ph2_groups import *
 from asrvsn_mpl.rvs import *
 from microseg.utils.colors import *
 import microseg.utils.sigfigs as sigfigs
-from matgeo import Ellipsoid, Sphere
+from matgeo import Ellipsoid, Sphere, PlanarPolygon, PlanarPolygonPacking
 
 # Preconditions
 random.seed(0)
