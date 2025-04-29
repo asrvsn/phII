@@ -149,17 +149,21 @@ def save_fig(fig: plt.Figure, ph2_name: str, exts=save_exts, dpi=300, compressed
 
 
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser(description='Process segmentation data.')
-    parser.add_argument('filepath', type=str, help='Path to the input file (mandatory)')
-    args = parser.parse_args()
-    fp = args.filepath
-    assert os.path.splitext(fp)[1] == '.seg_ph2', f'File must have .seg_ph2 extension: {fp}'
+    mode = 'compute'
 
-    seg = pickle.load(open(fp, 'rb'))
-    # seg.render_ellipsoid_projection()
-    seg.render_chull_projection()
+    if mode == 'render':
+        import argparse
+        parser = argparse.ArgumentParser(description='Process segmentation data.')
+        parser.add_argument('filepath', type=str, help='Path to the input file (mandatory)')
+        args = parser.parse_args()
+        fp = args.filepath
+        assert os.path.splitext(fp)[1] == '.seg_ph2', f'File must have .seg_ph2 extension: {fp}'
 
-    # gsegs = GroupedPh2Segmentations.from_folder(data_path, recompute=recompute_segs)
-    # assert len(gsegs) > 0, f'No segmentations found in {data_path}'
-    # print('All segmentations complete.')
+        seg = pickle.load(open(fp, 'rb'))
+        # seg.render_ellipsoid_projection()
+        seg.render_chull_projection()
+    
+    elif mode == 'compute':
+        gsegs = GroupedPh2Segmentations.from_folder(data_path, recompute=True)
+        assert len(gsegs) > 0, f'No segmentations found in {data_path}'
+        print('All segmentations complete.')

@@ -81,12 +81,12 @@ class GroupedPh2Segmentations:
         assert len(segs) == 1, f'Zero or multiple segmentations with pathname {pathname}'
         return segs[0]
 
-    def recompute(self, metrics_only: bool=False):
+    def recompute(self, **kwargs):
         '''
         Recompute all segmentations
         '''
         for seg in tqdm(list(self.all_segmentations)):
-            seg.recompute(metrics_only=metrics_only)
+            seg.recompute(**kwargs)
         ## Normalized metrics
         self.normalized_metrics = {
             name: np.concatenate([

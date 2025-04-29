@@ -160,7 +160,11 @@ class Ph2Segmentation(Segmentation2D):
             nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
         'Second moment': Metric(
-            lambda self, p, cp, _: p.trace_M2(cp.centroid(), standardized=True), # Take the dimensionless form
+            lambda self, p, _, __: p.trace_M2(p.centroid(), standardized=True), # Take the dimensionless (centered and scale-invariant) form
+            normalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
+        ),
+        'Second moment about cell': Metric(
+            lambda self, p, cp, _: p.trace_M2(cp.centroid(), standardized=True), # Take the dimensionless (centered and scale-invariant) form
             normalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
         'Voronoi error': Metric(
@@ -190,8 +194,15 @@ class Ph2Segmentation(Segmentation2D):
             lambda self, p, _, __: self.ellipse.mahalanobis_distance(p.centroid()),
             nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
         ),
+        'Mahalanobis distance to contact patch': Metric(
+            lambda self, p, _, __: self.contact_ell.mahalanobis_distance(p.centroid()),
+            nondimensionalize = lambda xs: (xs - xs.min()) / (xs.mean() - xs.min()),
+        ),
         'Chull-projected normal': Metric(
             lambda self, p, _, __: self.hull.project_poly_z(p).normal @ np.array([0,0,1]),
+        ),
+        'Hull contact angle': Metric(
+            lambda self, p, _, __: vec_angle_deg(self.hull.project_poly_z(p).normal, np.array([0,0,-1])),
         ),
     }
     # Metrics computed for the entire segmentation
@@ -333,11 +344,13 @@ class Ph2Segmentation(Segmentation2D):
         # self.compute_polygons()
         # self.compute_metrics()
 
-    def recompute(self, metrics_only: bool=False):
-        if not metrics_only:
+    def recompute(self, triangulations: bool=True, polygons: bool=True, metrics: bool=True):
+        if triangulations:
             self.compute_triangulations()
+        if polygons:
             self.compute_polygons()
-        self.compute_metrics()
+        if metrics:
+            self.compute_metrics()
 
     def compute_triangulations(self, chan: int=0, level: float=0.5):
         stack = load_stack(self.img_path)[:, :, :, chan].transpose(1,2,0) # img is ZXYC
@@ -369,23 +382,35 @@ class Ph2Segmentation(Segmentation2D):
         self.orig_polygons = [p.set_res(*self.upp) for p in self.orig_display_polygons]
         self.orig_cell_polygons = [p.set_res(*self.upp) for p in self.orig_display_cell_polygons]
         self.orig_cell_coms = np.array([p.centroid() for p in self.orig_cell_polygons])
+        assert len(self.orig_polygons) == len(self.orig_cell_polygons) == len(self.orig_cell_coms) == len(self.orig_display_polygons) == len(self.orig_display_cell_polygons) == len(self.orig_display_cell_coms), 'Must have a polygon for each compartment'
+        # Masks
+        ## 1. Those within the bounding ellipse
+        mask_ellipse = self.ellipse.contains(self.orig_cell_coms)
+        ## 2. Contact angles
+        orig_poly_angles = np.array([vec_angle_deg(self.hull.project_poly_z(p).normal, np.array([0,0,-1])) for p in self.orig_polygons])
+        # print(f'Poly angles: min: {orig_poly_angles.min()}, max: {orig_poly_angles.max()}, mean: {orig_poly_angles.mean()}')
+        mask_angles = orig_poly_angles < float('inf')
+        ## 3. Contact patch
+        # self.contact_patch = PlanarPolygon.bounding_polygon(np.array(self.orig_polygons)[mask_ellipse & mask_angles_5])
+        # self.contact_ell = Ellipse.from_poly(self.contact_patch)
+        # self.display_contact_patch = PlanarPolygon.bounding_polygon(np.array(self.orig_display_polygons)[mask_ellipse & mask_angles_5])
+        # self.display_contact_ell = Ellipse.from_poly(self.display_contact_patch)
+        ## Apply all masks
+        mask_all = np.logical_and.reduce([mask_ellipse, mask_angles])
+        self.display_polygons = np.array(self.orig_display_polygons)[mask_all]
+        self.display_cell_polygons = np.array(self.orig_display_cell_polygons)[mask_all]
+        self.display_cell_coms = self.orig_display_cell_coms[mask_all]
+        self.polygons = np.array(self.orig_polygons)[mask_all]
+        self.cell_polygons = np.array(self.orig_cell_polygons)[mask_all]
+        self.cell_coms = self.orig_cell_coms[mask_all]
+        # print(f'Filtered from {len(self.orig_polygons)} to {len(self.polygons)} polygons')
         # Perform correction
-        ## 0. Determine shape of contact patch (take to be ellipsoid)
+        ## 0. Determine shape of contact patch (take to be ellipse)
         ## 1. In elliptically symmetric rings, calculate systematic second moment change induced by deformation
         ## 2. Perform area-preserving inversion of this deformation
         ## 3. Upgrade planarpolygon library with methods to handle arbitrarily oriented polygons
         ## 4. From original position of cell within compartment, perform same transform of that point and use in offset calculations
         ## 5. Leave the cell polygons as-is?
-        self.orig_poly_angles = np.array([vec_angle_deg(self.hull.project_poly_z(p).normal, np.array([0,0,-1])) for p in self.orig_polygons])
-        print(f'Poly angles: min: {self.orig_poly_angles.min()}, max: {self.orig_poly_angles.max()}, mean: {self.orig_poly_angles.mean()}')
-        self.poly_mask = self.orig_poly_angles < 10
-        self.display_polygons = np.array(self.orig_display_polygons)[self.poly_mask]
-        self.display_cell_polygons = np.array(self.orig_display_cell_polygons)[self.poly_mask]
-        self.display_cell_coms = self.orig_display_cell_coms[self.poly_mask]
-        self.polygons = np.array(self.orig_polygons)[self.poly_mask]
-        self.cell_polygons = np.array(self.orig_cell_polygons)[self.poly_mask]
-        self.cell_coms = self.orig_cell_coms[self.poly_mask]
-        print(f'Filtered from {len(self.orig_polygons)} to {len(self.polygons)} polygons')
         ## Compute Voronoi
         self.compute_voronoi_polygons()
         # print('Computed polygons and ellipse')
@@ -638,9 +663,11 @@ class Ph2Segmentation(Segmentation2D):
         self.recompute()
         polys = [p.embed_XY() for p in self.orig_polygons]
         poly_centers = Plane.XY().reverse_embed(np.array([p.centroid() for p in self.orig_polygons]))
+        zoff = np.array([0, 0, self.tri.pts[:, 2].min()])
+        contact_patch = self.contact_patch.embed_XY() + zoff
+        contact_patch_center = Plane.XY().reverse_embed(self.contact_patch.centroid()) + zoff
         proj_polys = [self.hull.project_poly_z(p) for p in self.orig_polygons]
         proj_poly_centers = np.array([p.plane.reverse_embed(p.centroid()) for p in proj_polys])
-        angles = self.orig_poly_angles
         mask = self.poly_mask.astype(int)
         def fun(vw):
             center = self.tri.pts.mean(axis=0)
@@ -651,6 +678,7 @@ class Ph2Segmentation(Segmentation2D):
             surf = GLTriangulationItem(self.tri)
             vw.addItem(surf)
             pgutil.ppolygons_3d(vw, polys, poly_centers, colormap=mask)
+            pgutil.ppolygons_3d(vw, [contact_patch], np.array([contact_patch_center]), colormap=mask)
             # pgutil.outlines_3d(vw, polys)
             # pgutil.ppolygons_3d(vw, proj_polys, proj_poly_centers, colormap=mask)
             # ell = self.ellipse.revolve_major() + np.array([0, 0, self.ellipse.get_minor_radius() - 40])
@@ -666,9 +694,3 @@ class Ph2Segmentation(Segmentation2D):
     def total_polygon_area(self) -> float:
         return np.sum([p.area() for p in self.polygons])
     
-
-def cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
-    return np.dot(v1, v2) / (la.norm(v1) * la.norm(v2))
-
-def angle_between_lines(v1: np.ndarray, v2: np.ndarray) -> float:
-    return np.arccos(abs(cosine_similarity(v1, v2)))
