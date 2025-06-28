@@ -19,6 +19,7 @@ import matplotlib as mpl
 
 DATA_PATH = '../data'
 FIGS_PATH = '../figures'
+FIGS_HIRES_PATH = '../figures_hires'
 ZENODO_PATH = '../zenodo'
 TOPVIEW_STAGES = ['I', 'II', 'III', 'IV', 'S']
 
@@ -62,6 +63,15 @@ def run_for_each_spheroid_crosssection(fun: Callable):
         print(f'Processing {path}')
         fun(stage, path)
 
+def get_from_spheroid(stage: str, spheroid: int, fun: Callable, log: bool=True):
+    data = dict()
+    def inner_fun(i_stage: str, i_spheroid: int, i_path: str):
+        if i_stage == stage and i_spheroid == spheroid:
+            data['result'] = fun(i_stage, i_spheroid, i_path)
+    run_for_each_spheroid_topview(inner_fun, log=log)
+    return data['result']
+
+
 ''' Plotting '''
 
 def set_preconditions():
@@ -99,7 +109,51 @@ stage_colors = {
     'S': 'darkorange',
 }
 
-def save_fig(fig: plt.Figure, pathname: str, exts: list[str], dpi=300, compressed_dpi=100, jpeg_quality=85, autorasterize=True, trim=""):
+def save_fig(fig: plt.Figure, pathname: str, exts: list[str], dpi=300, compressed_dpi=100, jpeg_quality=85, autorasterize=True, trim="", compress=True, pagesize_cm=None):
+    # Handle pagesize parameter for PNAS compliance
+    if pagesize_cm is not None:
+        original_size = fig.get_size_inches()
+        max_size_inches = pagesize_cm / 2.54
+        width, height = original_size
+        if width > height:
+            new_size = (max_size_inches, max_size_inches * height / width)
+            scale_factor = max_size_inches / width
+        else:
+            new_size = (max_size_inches * width / height, max_size_inches)
+            scale_factor = max_size_inches / height
+        
+        # Scale all vector elements
+        for ax in fig.axes:
+            # Fonts
+            for text in ax.texts + [ax.title, ax.xaxis.label, ax.yaxis.label] + ax.xaxis.get_ticklabels() + ax.yaxis.get_ticklabels():
+                if text and hasattr(text, 'get_fontsize'):
+                    text.set_fontsize(text.get_fontsize() * scale_factor)
+            
+            # Lines and collections
+            for artist in ax.lines + ax.collections:
+                if hasattr(artist, 'set_linewidth'):
+                    artist.set_linewidth(artist.get_linewidth() * scale_factor)
+                if hasattr(artist, 'set_sizes'):
+                    artist.set_sizes([s * scale_factor for s in artist.get_sizes()])
+                if hasattr(artist, 'set_linewidths'):
+                    artist.set_linewidths([lw * scale_factor for lw in artist.get_linewidths()])
+                if hasattr(artist, 'set_edgewidths'):
+                    artist.set_edgewidths([ew * scale_factor for ew in artist.get_edgewidths()])
+                if hasattr(artist, 'set_markersize'):
+                    artist.set_markersize(artist.get_markersize() * scale_factor)
+                if hasattr(artist, 'set_markeredgewidth'):
+                    artist.set_markeredgewidth(artist.get_markeredgewidth() * scale_factor)
+        
+        # Legends
+        for legend in fig.legends:
+            legend.set_fontsize(legend.get_fontsize() * scale_factor)
+            for line in legend.get_lines():
+                line.set_linewidth(line.get_linewidth() * scale_factor)
+                if hasattr(line, 'set_markersize'):
+                    line.set_markersize(line.get_markersize() * scale_factor)
+        
+        fig.set_size_inches(*new_size)
+    
     # Create directory if it doesn't exist
     os.makedirs(os.path.dirname(pathname), exist_ok=True)
     for ext in exts:
@@ -107,39 +161,40 @@ def save_fig(fig: plt.Figure, pathname: str, exts: list[str], dpi=300, compresse
         if ext == 'pdf':
             if autorasterize:
                 pt.rasterize_fig(fig)
-            path_uncompressed = f'{pathname}.uncompressed.{ext}'
+            path_uncompressed = f'{pathname}.uncompressed.{ext}' if compress else path
             fig.savefig(path_uncompressed, bbox_inches='tight', dpi=dpi)
             print(f'Saved uncompressed figure to {path_uncompressed}')
-            # Use ghostscript to optimize PDF
-            gs_command = [
-                "gs",
-                "-sDEVICE=pdfwrite",  # Output device
-                "-dCompatibilityLevel=1.5",  # PDF version compatibility
-                f"-dPDFSETTINGS=/printer",  # Adjust settings for print-quality compression
-                f"-dAutoFilterColorImages=true",
-                # f"-dColorImageFilter=/DCTEncode",  # Force JPEG compression
-                f"-dColorImageDownsampleType=/Bicubic",  # Downsample method
-                f"-dColorImageResolution={compressed_dpi}",  # Downsample resolution
-                f"-dAutoFilterGrayImages=true",
-                # f"-dGrayImageFilter=/DCTEncode",  # Force JPEG compression
-                f"-dGrayImageDownsampleType=/Bicubic",  # Downsample method
-                f"-dGrayImageResolution={compressed_dpi}",  # Downsample resolution
-                f"-dJPEGQ={jpeg_quality}",  # JPEG compression quality
-                f"-dMonoImageFilter=/CCITTFaxEncode",
-                f"-dUseFlateCompression=true",
-                f"-dCompressPages=true",
-                f"-dDiscardDocumentStruct=true",
-                f"-dDiscardMetadata=true",
-                f"-dSubsetFonts=true",
-                f"-dEmbedAllFonts=true",
-                "-dNOPAUSE",  # No pause between pages
-                "-dBATCH",  # Batch mode (exit when done)
-                "-dQUIET",  # Suppress messages
-                f"-sOutputFile={path}",  # Output file
-                path_uncompressed  # Input file
-            ]
-            subprocess.run(gs_command, check=True)
-            print(f'Saved compressed figure to {path}')
+            if compress:
+                # Use ghostscript to optimize PDF
+                gs_command = [
+                    "gs",
+                    "-sDEVICE=pdfwrite",  # Output device
+                    "-dCompatibilityLevel=1.5",  # PDF version compatibility
+                    f"-dPDFSETTINGS=/printer",  # Adjust settings for print-quality compression
+                    f"-dAutoFilterColorImages=true",
+                    # f"-dColorImageFilter=/DCTEncode",  # Force JPEG compression
+                    f"-dColorImageDownsampleType=/Bicubic",  # Downsample method
+                    f"-dColorImageResolution={compressed_dpi}",  # Downsample resolution
+                    f"-dAutoFilterGrayImages=true",
+                    # f"-dGrayImageFilter=/DCTEncode",  # Force JPEG compression
+                    f"-dGrayImageDownsampleType=/Bicubic",  # Downsample method
+                    f"-dGrayImageResolution={compressed_dpi}",  # Downsample resolution
+                    f"-dJPEGQ={jpeg_quality}",  # JPEG compression quality
+                    f"-dMonoImageFilter=/CCITTFaxEncode",
+                    f"-dUseFlateCompression=true",
+                    f"-dCompressPages=true",
+                    f"-dDiscardDocumentStruct=true",
+                    f"-dDiscardMetadata=true",
+                    f"-dSubsetFonts=true",
+                    f"-dEmbedAllFonts=true",
+                    "-dNOPAUSE",  # No pause between pages
+                    "-dBATCH",  # Batch mode (exit when done)
+                    "-dQUIET",  # Suppress messages
+                    f"-sOutputFile={path}",  # Output file
+                    path_uncompressed  # Input file
+                ]
+                subprocess.run(gs_command, check=True)
+                print(f'Saved compressed figure to {path}')
             if trim:
                 l, b, r, t = parse_trim(trim) # latex-style command
                 crop_cmd = [
@@ -154,6 +209,10 @@ def save_fig(fig: plt.Figure, pathname: str, exts: list[str], dpi=300, compresse
         else:
             fig.savefig(path, bbox_inches='tight', dpi=dpi)
         print(f'Saved figure to {path}')
+    
+    # Restore original figure size if pagesize was applied
+    if pagesize_cm is not None:
+        fig.set_size_inches(original_size)
 
 def pad_left_ax(ax, x_frac: float=0.1):
     x_min, x_max = ax.get_xlim()
